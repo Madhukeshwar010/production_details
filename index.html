@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome Page</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: auto;
+    }
+
+    body {
+      background-image: url('9.png'); 
+      background-repeat: no-repeat;        /* Prevents tiling */
+      background-size: cover;              /* Makes it cover the full screen */
+      background-position: center center;  /* Centers the image */
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f9f9f9;
+      box-sizing: border-box;
+    }
+
+    .container {
+      background: #f2f2f2;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    label, select, input, button {
+      display: block;
+      margin: 10px auto;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .section.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Shipment Quantity Details</h2>
+
+    <!-- Initial Section -->
+      <div id="initialSection" class="section active">
+      <label for="clientname" style="font-weight: bold;">Enter the Client Name:</label>
+      <input type="text" id="clientname" name="clientname" required />
+
+      <label for="location" style="font-weight: bold;">Enter the Client Location:</label>
+      <input type="text" id="location" name="location" required />
+
+      <br />
+      <button onclick="showNext()">Next</button>
+    </div>
+
+    <!-- Section 2 -->
+    <div id="nextSection_1" class="section">
+      <label for="shipDate" style="font-weight: bold;">Enter Date of Deployment:</label>
+      <input type="date" id="shipDate" name="shipDate" required min="2025-07-20" />
+
+      <label for="modetype" style="font-weight: bold;">Enter Mode of Deployment:</label>
+      <input type="text" id="modetype" name="modetype" required placeholder="e.g., POC"/>
+
+      <label for="gwtype" style="font-weight: bold;">Select the Type of Gateway To Be Deployed:</label>
+      <select id="gwtype">
+        <option value="">-- Select --</option>
+        <option value="0">Compulab</option>
+        <option value="1">vGateway_lite</option>
+      </select>
+
+      <label for="gwno" style="font-weight: bold;">Enter Quantity of Gateway:</label>
+      <input type="number" id="gwno" name="gwno" onchange="generateMacInputs()" />
+
+      <div id="gwmacInputsContainer"></div>
+
+      <label for="return_detail" style="font-weight: bold;">Return Status Of The Product:</label>
+      <select id="return_detail" onchange="toggleReturnDate()">
+        <option value="">-- Select --</option>
+        <option value="0">Returnable</option>
+        <option value="1">Non-Returnable</option>
+      </select>
+
+      <div id="returnDateContainer" style="display: none; margin-top: 10px;">
+        <label for="returnDate" style="font-weight: bold;">Enter Date of Return:</label>
+        <input type="date" id="returnDate" name="returnDate" />
+      </div>
+      <br />
+      <button onclick="showNext_1()">Next</button>
+    </div>
+
+    <!-- Section 3 -->
+
+      <div id="nextSection_2" class="section">
+
+      <label for="gwspec" style="font-weight: bold;">Enter The Gateway Specification:</label>
+      <input type="text" id="gwspec" name="gwspec"/>      
+
+      <label for="gwrelease" style="font-weight: bold;">Enter Gateway Release Version:</label>
+      <input type="text" id="gwrelease" name="gwrelease"/> 
+
+      <br />
+      <button onclick="showNext_2()">Next</button>
+    </div>
+
+    <div id="nextSection_3" class="section">
+      <label for="sensortype" style="font-weight: bold;">Select the Type Of vSens:</label>
+      <select id="sensortype">
+        <option value="">-- Select --</option>
+        <option value="0">KX</option>
+        <option value="1">ADXL</option>
+      </select>
+
+      <label for="sensorno" style="font-weight: bold;">Enter Quantity of vSens:</label>
+      <input type="number" id="sensorno" name="sensorno" onchange="generateSensorMacInputs()" />     
+
+      <div id="sensormacInputsContainer"></div>
+
+      <label for="sensor_release" style="font-weight: bold;">Enter vSens Firmware Version:</label>
+      <input type="text" id="sensor_release" name="sensor_release"/> 
+
+      <label for="mount" style="font-weight: bold;">Select the Type Of Mounting:</label>
+      <select id="mount">
+        <option value="">-- Select --</option>
+        <option value="0">Adhesive</option>
+        <option value="1">Magnet</option>
+      </select>
+      <br />
+      <button onclick="showNext_3()">Next</button>
+    </div>
+  
+      <div id="nextSection_4" class="section">
+
+      <label for="mqttip" style="font-weight: bold;">Enter MQTT Broker IP:</label>
+      <input type="text" id="mqttip" name="mqttip"/>      
+
+      <label for="mqtttype" style="font-weight: bold;">Select the Type Of MQTT Broker:</label>
+      <select id="mqtttype">
+        <option value="">-- Select --</option>
+        <option value="0">SSL</option>
+        <option value="1">Non-SSL</option>
+      </select>
+
+      <label for="dashuser" style="font-weight: bold;">Enter Dashboard Username:</label>
+      <input type="text" id="dashuser" name="dashuser"/>   
+
+      <label for="dashpass" style="font-weight: bold;">Enter Dashboard Password:</label>
+      <input type="text" id="dashpass" name="dashpass"/>   
+
+      <br />
+      <button onclick="submit()">Submit</button>
+    </div>
+
+  </div>
+
+  <script>
+
+    function generateMacInputs() {
+      const container = document.getElementById("gwmacInputsContainer");
+      const count = parseInt(document.getElementById("gwno").value);
+      
+      container.innerHTML = "";
+
+      if (!isNaN(count) && count > 0) {
+        for (let i = 1; i <= count; i++) {
+          const div = document.createElement("div");
+          div.className = "mac-input";
+          div.innerHTML = `
+            <label for="gw_mac_${i}" style="font-weight: bold;">Gateway ${i} MAC ID:</label>
+            <input type="text" id="gw_mac_${i}" name="gw_mac_${i}" placeholder="Enter Gateway MAC ID" />
+          `;
+          container.appendChild(div);
+        }
+      }
+    }
+
+    function generateSensorMacInputs() {
+      const container = document.getElementById("sensormacInputsContainer");
+      const count = parseInt(document.getElementById("sensorno").value);
+
+      container.innerHTML = "";
+
+      if (!isNaN(count) && count > 0) {
+        for (let i = 1; i <= count; i++) {
+          const div = document.createElement("div");
+          div.className = "mac-input_1";
+          div.innerHTML = `
+            <label for="sensor_mac_${i}" style="font-weight: bold;">Sensor ${i} MAC ID:</label>
+            <input type="text" id="sensor_mac_${i}" name="sensor_mac_${i}" placeholder="Enter Sensor MAC ID" />
+          `;
+          container.appendChild(div);
+        }
+      }
+    }
+
+    function toggleReturnDate() {
+      const returnStatus = document.getElementById("return_detail").value;
+      const returnDateContainer = document.getElementById("returnDateContainer");
+
+      if (returnStatus === "0") {
+        returnDateContainer.style.display = "block";
+      } else {
+        returnDateContainer.style.display = "none";
+        document.getElementById("returnDate").value = "";
+      }
+    }
+
+    function showNext() {
+      const name = document.getElementById("clientname").value.trim();
+      const location = document.getElementById("location").value.trim();
+
+      if (name && location) {
+        document.getElementById("initialSection").classList.remove("active");
+        document.getElementById("nextSection_1").classList.add("active");
+      } else {
+        alert("Please fill out basic client details.");
+      }
+    }
+
+    function showNext_1() {
+      const shipDate = document.getElementById("shipDate").value.trim();
+      const modeType = document.getElementById("modetype").value.trim();
+      const gw_no = document.getElementById("gwno").value.trim();
+      const gwtype = document.getElementById("gwtype").value.trim(); 
+      const returnStatus = document.getElementById("return_detail").value.trim();
+
+      if (shipDate && modeType && gw_no && gwtype && returnStatus) {
+        if (returnStatus === "0") {
+          const returnDate = document.getElementById("returnDate").value.trim();
+          if (!returnDate) {
+            alert("Please enter the return date.");
+            return;
+          }
+        }
+
+        // All fields are valid, show the next section
+        document.getElementById("nextSection_1").classList.remove("active");
+        document.getElementById("nextSection_2").classList.add("active");
+      } else {
+        alert("Please fill out all deployment details.");
+      }
+    }
+
+    function showNext_2() {
+      const gw_spec = document.getElementById("gwspec").value.trim();
+      const gw_release = document.getElementById("gwrelease").value.trim();
+      if (gw_spec && gw_release !== "") {
+        document.getElementById("nextSection_2").classList.remove("active");
+        document.getElementById("nextSection_3").classList.add("active");
+      }
+       else {
+        alert("Please fill out basic gateway details.");
+      }
+    }
+
+      function showNext_3() {
+      const sensor_type = document.getElementById("sensortype").value.trim();
+      const sensor_no = document.getElementById("sensorno").value.trim();
+      const sensor_release = document.getElementById("sensor_release").value.trim();
+      const mount = document.getElementById("mount").value.trim();
+      if (sensor_type && sensor_no && sensor_release && mount!== "") {
+        document.getElementById("nextSection_3").classList.remove("active");
+        document.getElementById("nextSection_4").classList.add("active");
+      }
+      else {
+        alert("Please fill out basic vsens details.");
+      }
+    }
+
+    async function submit() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // First table: Shipment details
+      const data = [
+        ["Client Name", document.getElementById("clientname").value],
+        ["Client Location", document.getElementById("location").value],
+        ["Deployment Date", document.getElementById("shipDate").value],
+        ["Mode of Deployment", document.getElementById("modetype").value],
+        ["Gateway Quantity", document.getElementById("gwno").value],
+        ["Gateway Type", document.getElementById("gwtype").selectedOptions[0].text],
+        ["Return Status", document.getElementById("return_detail").selectedOptions[0].text],
+        ["Return Date", document.getElementById("returnDate").value || "N/A"],
+        ["Gateway Spec", document.getElementById("gwspec").value],
+        ["Gateway Release", document.getElementById("gwrelease").value],
+        ["vSens Type", document.getElementById("sensortype").selectedOptions[0].text],
+        ["vSens Quantity", document.getElementById("sensorno").value],
+        ["vSens Firmware", document.getElementById("sensor_release").value],
+        ["Mounting Type", document.getElementById("mount").selectedOptions[0].text],
+        ["MQTT IP", document.getElementById("mqttip").value],
+        ["MQTT Type", document.getElementById("mqtttype").selectedOptions[0].text],
+        ["Dashboard Username", document.getElementById("dashuser").value],
+        ["Dashboard Password", document.getElementById("dashpass").value]
+      ];
+
+      // Page 1: Title & Shipment Table
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Shipment Deployment Report", 14, 15);
+
+      doc.autoTable({
+        startY: 25,
+        head: [["Shipment Details", "Quantity"]],
+        body: data,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [0, 102, 204] },
+      });
+
+      // --- Page 2: Gateway MAC and Sensor MAC Table ---
+      doc.addPage();
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Gateway and Sensor MAC Addresses", 14, 15);
+
+      const gatewayCount = parseInt(document.getElementById("gwno").value || 0);
+      const sensorCount = parseInt(document.getElementById("sensorno").value || 0);
+
+      const maxRows = Math.max(gatewayCount, sensorCount);
+      const macTable = [];
+
+      for (let i = 1; i <= maxRows; i++) {
+        const gwMac = document.getElementById(`gw_mac_${i}`)?.value || "";
+        const sensorMac = document.getElementById(`sensor_mac_${i}`)?.value || "";
+        macTable.push([gwMac, sensorMac]);
+      }
+
+      doc.autoTable({
+        startY: 25,
+        head: [["Gateway MAC", "Sensor MAC"]],
+        body: macTable,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [204, 0, 0] }, // Red header
+      });
+
+      const filename = `${document.getElementById("clientname").value || "report"}.pdf`;
+      doc.save(filename);
+    }
+
+  </script>
+</body>
+</html>
